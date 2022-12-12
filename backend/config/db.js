@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
 
-// connection
-//usertrartia
-//XSJ3ohX01gBDQTai
-
-//
 
 const dbUser =  process.env.DB_USER;
 const dbPassword = process.env.DB_PASS;
@@ -12,7 +7,7 @@ const dbPassword = process.env.DB_PASS;
 const conn = async () => {
     try {
         const dbConn = await mongoose.connect(
-            `mongodb+srv://${dbUser}:${dbPassword}@cluster0.8wq53uf.mongodb.net/?retryWrites=true&w=majority`);
+            `mongodb+srv://${dbUser}:${dbPassword}@.mongodb.net/?retryWrites=true&w=majority`);
         console.log("Database connected success");
     } catch (error) {
         console.log(error);
