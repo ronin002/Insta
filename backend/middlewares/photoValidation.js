@@ -4,10 +4,10 @@ const photoInsertValidation = () => {
 
         return [
             body("title")
-                .not()
-                .equals("undefined").withMessage("Title photo is mandatory")
+                .optional()
+                //.not().equals("undefined").withMessage("Title photo is mandatory")
                 .isString().withMessage("Title photo is mandatory")
-                .isLength({min:3}).withMessage("Title lenght: minium 3 characters"),
+                .isLength({min:3}).withMessage("Title lenght: minimum 3 characters"),
             body("image").custom((value,{ req }) =>{
                 if (!req.file){
                     throw new Error("Image is mandatory");
@@ -20,6 +20,29 @@ const photoInsertValidation = () => {
 
 }
 
+const photoUpdateValidation = () => {
+
+    return[
+        body("title")
+            .optional()
+            .isString().withMessage("Title photo is mandatory")
+            .isLength({min:3}).withMessage("Title lenght: minimum 3 characters"),
+    ]
+
+}
+
+const commentsValidation = () => {
+
+    return[
+        body("comment")
+            .isString().withMessage("Comment is mandatory")
+            .isLength({min:3}).withMessage("Comment lenght: minimum 3 characters"),
+    ]
+
+}
+
 module.exports = {
-    photoInsertValidation
+    photoInsertValidation,
+    photoUpdateValidation,
+    commentsValidation
 }

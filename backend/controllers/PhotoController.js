@@ -78,10 +78,155 @@ const getUserPhotos = async (req, res) => {
     
     const id = req.params;
 
-    const photos = await Photo.find({ userId: id })
+    const photos = await Photo.find({ userId: mongoose.Types.ObjectId(id) })
             .sort([["createdAt",-1]])
             .exec();
 
+    res.status(200).json(photos);
+
+}
+
+const getPhotoById = async (req, res) => {
+
+    const id = req.params;
+
+    try {
+        
+        const photo = await Photo.findById(mongoose.Types.ObjectId(id));
+
+        if (!photo){
+            res.status(404).json({errors:["Error: PXS001 - Photo not found"]});
+            return;
+        }
+
+        return res.status(200).json(photo);
+        
+
+    } catch (error) {
+
+        res.status(404).json({errors:["Error: PXS003 - Photo not found"]});
+        return;
+        
+    }
+
+}
+
+const updatePhoto = async (req, res) => {
+
+    const {id} = req.params;
+    const {title} = req.body;
+    const reqUser = req.user;
+
+    try {
+    
+        const photo = await Photo.findById(mongoose.Types.ObjectId(id));
+
+        if (!photo){
+            res.status(404).json({errors: ["Error: PXU001 - Photo not found"]});
+            return;
+        }
+        
+        if (!photo.userId.equals(reqUser._id)){
+            res.status(422).json({errors: ["Error: PXU002 - Access Denied"]});
+            return;
+        }
+
+        if (title){
+            photo.title = title;
+        }
+
+        //Photo.findByIdAndUpdate(photo._id);
+        await photo.save();
+
+        return res.status(200).json(photo);
+
+    } catch (error) {
+
+        res.status(404).json({errors: ["Error: PXU001 - Photo not found"]});
+        return;
+
+    }
+
+}
+
+const likePhoto = async (req, res) => {
+
+    const {id} = req.params;
+    const reqUser = req.user;
+
+    try {
+        const photo = await Photo.findById(mongoose.Types.ObjectId(id));
+
+        if (!photo){
+            res.status(404).json({errors: ["Error: PL001 - Photo not found "]});
+            return;
+        }
+
+        if (photo.likes.includes(reqUser._id)){
+            res.status(422).json({errors:["Error: PL002 - Photo alredy had user like"]})
+            return;
+        }
+
+        photo.likes.push(reqUser._id);
+
+        photo.save();
+
+        return res.status(200).json({photo: id, userId: reqUser._id, message: "Photo liked"});
+
+    } catch (error) {
+        res.status(404).json({errors: ["Error: PL001 - Photo not found "]});
+        return;
+    }
+
+}
+
+const commentPhoto = async (req,res) => {
+
+    const {id} = req.params;
+    const comment = req.body;
+    const reqUser =  req.user;
+
+    try {
+        
+        const user = await User.findById(mongoose.Types.ObjectId(reqUser._id));
+
+        if (!user){
+            res.status(422).json({errors:["Error: PLC000 - User not found"]});
+            return;
+        }
+
+        const photo = await Photo.findById(mongoose.Types.ObjectId(id));
+
+        if (!photo){
+            res.status(404).json({errors:["Error: PLC001 - Photo not found"]});
+            return;
+        }
+
+        const userComment = {
+            comment,
+            userName: user.name,
+            userImage: user.profileImage,
+            userId: user._id
+        };
+
+        photo.comments.push(userComment);
+        await photo.save();
+
+        return res.status(200).json({photo: id, userComment: reqUser._id, message: "Comment inserted" });
+
+    } catch (error) {
+        res.status(404).json({errors:["Error: PLC099 - Photo not found"]});
+        return;
+    }
+
+}
+
+const searchPhotos = async (req, res) => {
+
+    const {q} = req.query;
+
+    const photos = await Photo.find({title: new RegExp(q,"i")}).exec();
+    
     return res.status(200).json(photos);
 
 }
@@ -91,4 +236,9 @@ module.exports = {
     removePhoto,
     getAllPhotos,
     getUserPhotos,
+    getPhotoById,
+    updatePhoto,
+    likePhoto, 
+    commentPhoto,
+    searchPhotos,
 }
