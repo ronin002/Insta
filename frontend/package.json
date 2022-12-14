@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.9.1",
+    "react-icons": "^4.7.1",
+    "react-router-dom": "^6.4.5",
+    "redux": "^4.2.0"
+  }
+}
